@@ -26,9 +26,7 @@ export class Tokenizer {
         this.scanForwardUntil(parsedContent.containsIntegerLiteral);
         const value = parsedContent.extract(start, this.currentPosition);
         this.addToken(Tokens.Literal(value));
-      }
-
-      if (character.isCharacter()) {
+      } else if (character.isCharacter()) {
         this.scanForwardUntil(parsedContent.containsCharacters);
         const value = parsedContent.extract(start, this.currentPosition);
         const token = ReservedKeywords.has(value) ? Tokens.ReservedKeyword(value) : Tokens.Identifier(value);
@@ -40,7 +38,6 @@ export class Tokenizer {
           this.addToken(Tokens.Separator(value));
         } else {
           this.addToken(Tokens.Unknown(value));
-          break;
         }
       }
     }
