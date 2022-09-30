@@ -1,32 +1,41 @@
-import { Identifier, Literal, ReservedKeywords, Separators, Token, Unknown } from './Token';
+import { Token } from './Token';
+import { Content } from '../types/Content';
+import { ParsedCharacter } from './ParsedCharacter';
+import { ParsedContent } from './ParsedContent';
+import { Tokens } from './Tokens';
+import { ReservedKeywords } from './ReservedKeywords';
+import { Separators } from './Separators';
 
 export class Tokenizer {
   private currentPosition = 0;
   private tokens: Token[] = [];
+  private readonly content: Content;
 
-  constructor(private content: string) {}
+  constructor(rawContent: string) {
+    this.content = ParsedContent(rawContent);
+  }
 
   execute(): Token[] {
-    const content = this.content;
-    while (this.currentPosition !== content.length) {
-      this.moveForwardUntil(content, this.containsSpaceOrTabOrBackspaceOrNewLine);
+    const parsedContent = this.content;
+    while (this.currentPosition !== parsedContent.value().length) {
+      this.scanForwardUntil(parsedContent.containsSpacesTabs);
       const start = this.currentPosition;
-      const currentCharacter = content.charAt(this.currentPosition);
-      const parsedContent = ParsedContent(currentCharacter);
+      const character = ParsedCharacter(parsedContent.at(this.currentPosition));
 
-      if (parsedContent.isLiteral()) {
-        this.moveForwardUntil(content, this.isLiteral);
-        this.addToken(Tokens.Literal(this.getValue(this.content, start)));
+      if (character.isIntegerLiteral()) {
+        this.scanForwardUntil(parsedContent.containsIntegerLiteral);
+        const value = parsedContent.extract(start, this.currentPosition);
+        this.addToken(Tokens.Literal(value));
       }
 
-      if (parsedContent.isCharacter()) {
-        this.moveForwardUntil(content, this.isCharacter);
-        const value = this.getValue(content, start);
+      if (character.isCharacter()) {
+        this.scanForwardUntil(parsedContent.containsCharacters);
+        const value = parsedContent.extract(start, this.currentPosition);
         const token = ReservedKeywords.has(value) ? Tokens.ReservedKeyword(value) : Tokens.Identifier(value);
         this.addToken(token);
       } else {
         this.currentPosition++;
-        const value = content.charAt(this.currentPosition - 1);
+        const value = parsedContent.at(this.currentPosition - 1);
         if (Separators.has(value)) {
           this.addToken(Tokens.Separator(value));
         } else {
@@ -43,63 +52,9 @@ export class Tokenizer {
     this.tokens.push(token);
   }
 
-  private getValue(content: string, start: number) {
-    return content.slice(start, this.currentPosition);
-  }
-
-  private containsSpaceOrTabOrBackspaceOrNewLine(toTest: string) {
-    return /[ \t\b\n]/.test(toTest);
-  }
-
-  private isCharacter(toTest: string): boolean {
-    return /[_a-zA-Z]/.test(toTest);
-  }
-
-  private isLiteral(toTest: string): boolean {
-    return /[0-9]/.test(toTest);
-  }
-
-  private moveForwardUntil(content: string, pred: (str: string) => boolean) {
-    while (this.currentPosition < content.length && pred(content.charAt(this.currentPosition))) {
+  private scanForwardUntil(pred: (position: number) => boolean) {
+    while (this.currentPosition < this.content.value().length && pred(this.currentPosition)) {
       this.currentPosition++;
     }
-  }
-}
-
-type Parsed = {
-  isLiteral(): boolean;
-  isCharacter(): boolean;
-};
-
-function ParsedContent(parsed: string): Parsed {
-  return {
-    isLiteral(): boolean {
-      return /[0-9]/.test(parsed);
-    },
-    isCharacter(): boolean {
-      return /[_a-zA-Z]/.test(parsed);
-    }
-  };
-}
-
-export class Tokens {
-  static Literal(value: string) {
-    return new Literal(value);
-  }
-
-  static Identifier(value: string) {
-    return new Identifier(value);
-  }
-
-  static ReservedKeyword(value: string) {
-    return ReservedKeywords.get(value)!;
-  }
-
-  static Separator(value: string) {
-    return Separators.get(value)!;
-  }
-
-  static Unknown(value: string) {
-    return new Unknown(value);
   }
 }

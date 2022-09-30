@@ -13,6 +13,7 @@ export class Const implements Token {
     return this;
   }
 }
+
 export class Let implements Token {
   value() {
     return 'let';
@@ -22,6 +23,7 @@ export class Let implements Token {
     return this;
   }
 }
+
 export class Var implements Token {
   value() {
     return 'var';
@@ -61,7 +63,7 @@ export class Semicolon implements Token {
     return this;
   }
 
-  value(): string {
+  value() {
     return ';';
   }
 }
@@ -81,7 +83,7 @@ export class Equal implements Token {
     return this;
   }
 
-  value(): string {
+  value() {
     return '=';
   }
 }
@@ -93,18 +95,7 @@ export class Unknown implements Token {
     return this;
   }
 
-  value(): string {
+  value() {
     return this.unknown;
   }
 }
-
-export const ReservedKeywords: Map<string, Token> = new Map<'function' | 'const' | 'let' | 'var' | 'return', Token>([
-  ['const', new Const()],
-  ['let', new Let()],
-  ['var', new Var()]
-]);
-
-export const Separators = new Map<string, Token>([
-  [';', new Semicolon()],
-  ['=', new Equal()]
-]);

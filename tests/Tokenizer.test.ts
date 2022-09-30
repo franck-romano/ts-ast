@@ -1,6 +1,7 @@
 import { expect } from 'chai';
-import { Tokenizer, Tokens } from '../src/tokens/Tokenizer';
+import { Tokenizer } from '../src/tokens/Tokenizer';
 import { Const, Equal, Let, Semicolon, Unknown, Var } from '../src/tokens/Token';
+import { Tokens } from '../src/tokens/Tokens';
 
 describe('Tokenizer', () => {
   describe('.execute()', () => {
