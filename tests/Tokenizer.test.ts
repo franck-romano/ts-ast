@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Tokenizer, Tokens } from '../src/tokens/Tokenizer';
-import { Const, Equal, Identifier, Let, Semicolon, Unknown, Var } from '../src/tokens/Token';
+import { Const, Equal, Let, Semicolon, Unknown, Var } from '../src/tokens/Token';
 
 describe('Tokenizer', () => {
   describe('.execute()', () => {
@@ -18,7 +18,7 @@ describe('Tokenizer', () => {
               const expected = [expectedVariableDeclaration];
 
               // WHEN
-              const actual = new Tokenizer().execute(content);
+              const actual = new Tokenizer(content).execute();
 
               // THEN
               expect(actual).to.eql(expected);
@@ -33,7 +33,7 @@ describe('Tokenizer', () => {
           const expected = [new Const(), Tokens.Identifier('myVar')];
 
           // WHEN
-          const actual = new Tokenizer().execute(content);
+          const actual = new Tokenizer(content).execute();
 
           // THEN
           expect(actual).to.eql(expected);
@@ -47,7 +47,7 @@ describe('Tokenizer', () => {
           const expected = [new Const(), Tokens.Identifier('myVar'), new Equal()];
 
           // WHEN
-          const actual = new Tokenizer().execute(content);
+          const actual = new Tokenizer(content).execute();
 
           // THEN
           expect(actual).to.eql(expected);
@@ -61,7 +61,7 @@ describe('Tokenizer', () => {
           const expected = [new Const(), Tokens.Identifier('myVar'), new Equal(), Tokens.Literal('1'), new Unknown('')];
 
           // WHEN
-          const actual = new Tokenizer().execute(content);
+          const actual = new Tokenizer(content).execute();
 
           // THEN
           expect(actual).to.eql(expected);
@@ -75,7 +75,7 @@ describe('Tokenizer', () => {
           const expected = [new Const(), Tokens.Identifier('myVar'), new Equal(), Tokens.Literal('1'), new Semicolon()];
 
           // WHEN
-          const actual = new Tokenizer().execute(content);
+          const actual = new Tokenizer(content).execute();
 
           // THEN
           expect(actual).to.eql(expected);

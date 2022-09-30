@@ -4,18 +4,22 @@ export class Tokenizer {
   private currentPosition = 0;
   private tokens: Token[] = [];
 
-  execute(content: string): Token[] {
+  constructor(private content: string) {}
+
+  execute(): Token[] {
+    const content = this.content;
     while (this.currentPosition !== content.length) {
       this.moveForwardUntil(content, this.containsSpaceOrTabOrBackspaceOrNewLine);
       const start = this.currentPosition;
       const currentCharacter = content.charAt(this.currentPosition);
+      const parsedContent = ParsedContent(currentCharacter);
 
-      if (this.isLiteral(currentCharacter)) {
+      if (parsedContent.isLiteral()) {
         this.moveForwardUntil(content, this.isLiteral);
-        this.addToken(Tokens.Literal(this.getValue(content, start)));
+        this.addToken(Tokens.Literal(this.getValue(this.content, start)));
       }
 
-      if (this.isCharacter(currentCharacter)) {
+      if (parsedContent.isCharacter()) {
         this.moveForwardUntil(content, this.isCharacter);
         const value = this.getValue(content, start);
         const token = ReservedKeywords.has(value) ? Tokens.ReservedKeyword(value) : Tokens.Identifier(value);
@@ -60,6 +64,22 @@ export class Tokenizer {
       this.currentPosition++;
     }
   }
+}
+
+type Parsed = {
+  isLiteral(): boolean;
+  isCharacter(): boolean;
+};
+
+function ParsedContent(parsed: string): Parsed {
+  return {
+    isLiteral(): boolean {
+      return /[0-9]/.test(parsed);
+    },
+    isCharacter(): boolean {
+      return /[_a-zA-Z]/.test(parsed);
+    }
+  };
 }
 
 export class Tokens {
