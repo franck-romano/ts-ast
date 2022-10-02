@@ -2,6 +2,9 @@ import { Content } from '../types/Content';
 
 export function ParsedContent(content: string): Content {
   return {
+    isEOF(position: number): boolean {
+      return content.length === position;
+    },
     value(): string {
       return content;
     },

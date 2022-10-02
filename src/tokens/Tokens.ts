@@ -1,4 +1,4 @@
-import { Colon, Const, Equal, Identifier, Let, Literal, Semicolon, Unknown, Var } from './Token';
+import { Colon, Const, EOF, Equal, Identifier, Let, Literal, Semicolon, Unknown, Var } from './Token';
 import { ReservedKeywords } from './ReservedKeywords';
 import { Separators } from './Separators';
 
@@ -9,6 +9,9 @@ export class Tokens {
 
   static Const() {
     return new Const();
+  }
+  static EOF() {
+    return new EOF();
   }
 
   static Let() {

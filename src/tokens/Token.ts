@@ -14,6 +14,16 @@ export class Const implements Token {
   }
 }
 
+export class EOF implements Token {
+  value() {
+    return 'EOF';
+  }
+
+  position(start: number, end: number): this {
+    return this;
+  }
+}
+
 export class Let implements Token {
   value() {
     return 'let';

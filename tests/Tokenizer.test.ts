@@ -1,13 +1,14 @@
 import { expect } from 'chai';
 import { Tokenizer } from '../src/tokens/Tokenizer';
 import { Tokens } from '../src/tokens/Tokens';
+import { EOF, Token } from '../src/tokens/Token';
 
 describe('Tokenizer', () => {
   describe('.execute()', () => {
     context('variable declaration', () => {
       context('keywords', () => {
         [
-          { keyword: 'let', expectedVariableDeclaration: Tokens.Const() },
+          { keyword: 'let', expectedVariableDeclaration: Tokens.Let() },
           { keyword: 'const', expectedVariableDeclaration: Tokens.Const() },
           { keyword: 'var', expectedVariableDeclaration: Tokens.Var() }
         ].forEach(({ keyword, expectedVariableDeclaration }) => {
@@ -15,10 +16,10 @@ describe('Tokenizer', () => {
             it('is properly mapped', () => {
               // GIVEN
               const content = keyword;
-              const expected = [expectedVariableDeclaration];
+              const expected = [expectedVariableDeclaration, Tokens.EOF()];
 
               // WHEN
-              const actual = new Tokenizer(content).execute();
+              const actual = tokenizeAll(content);
 
               // THEN
               expect(actual).to.eql(expected);
@@ -30,10 +31,10 @@ describe('Tokenizer', () => {
         it('is properly mapped', () => {
           // GIVEN
           const content = 'const myVar';
-          const expected = [Tokens.Const(), Tokens.Identifier('myVar')];
+          const expected = [Tokens.Const(), Tokens.Identifier('myVar'), Tokens.EOF()];
 
           // WHEN
-          const actual = new Tokenizer(content).execute();
+          const actual = tokenizeAll(content);
 
           // THEN
           expect(actual).to.eql(expected);
@@ -43,10 +44,16 @@ describe('Tokenizer', () => {
         it('is properly mapped', () => {
           // GIVEN
           const content = 'let myVar: string';
-          const expected = [Tokens.Let(), Tokens.Identifier('myVar'), Tokens.Colon(), Tokens.Identifier('string')];
+          const expected = [
+            Tokens.Let(),
+            Tokens.Identifier('myVar'),
+            Tokens.Colon(),
+            Tokens.Identifier('string'),
+            Tokens.EOF()
+          ];
 
           // WHEN
-          const actual = new Tokenizer(content).execute();
+          const actual = tokenizeAll(content);
 
           // THEN
           expect(actual).to.eql(expected);
@@ -57,10 +64,10 @@ describe('Tokenizer', () => {
         it('is properly mapped', () => {
           // GIVEN
           const content = 'const myVar =';
-          const expected = [Tokens.Const(), Tokens.Identifier('myVar'), Tokens.Equal()];
+          const expected = [Tokens.Const(), Tokens.Identifier('myVar'), Tokens.Equal(), Tokens.EOF()];
 
           // WHEN
-          const actual = new Tokenizer(content).execute();
+          const actual = tokenizeAll(content);
 
           // THEN
           expect(actual).to.eql(expected);
@@ -71,10 +78,16 @@ describe('Tokenizer', () => {
         it('is properly mapped', () => {
           // GIVEN
           const content = 'const myVar = 1';
-          const expected = [Tokens.Const(), Tokens.Identifier('myVar'), Tokens.Equal(), Tokens.Literal('1')];
+          const expected = [
+            Tokens.Const(),
+            Tokens.Identifier('myVar'),
+            Tokens.Equal(),
+            Tokens.Literal('1'),
+            Tokens.EOF()
+          ];
 
           // WHEN
-          const actual = new Tokenizer(content).execute();
+          const actual = tokenizeAll(content);
 
           // THEN
           expect(actual).to.eql(expected);
@@ -90,11 +103,12 @@ describe('Tokenizer', () => {
             Tokens.Identifier('myVar'),
             Tokens.Equal(),
             Tokens.Literal('1'),
-            Tokens.Semicolon()
+            Tokens.Semicolon(),
+            Tokens.EOF()
           ];
 
           // WHEN
-          const actual = new Tokenizer(content).execute();
+          const actual = tokenizeAll(content);
 
           // THEN
           expect(actual).to.eql(expected);
@@ -103,3 +117,16 @@ describe('Tokenizer', () => {
     });
   });
 });
+
+function tokenizeAll(content: string): Token[] {
+  const tokens: Token[] = [];
+
+  const tokenizer = new Tokenizer(content);
+  while (!tokens.find((token) => token instanceof EOF)) {
+    tokenizer.scanForward();
+    const scannedToken = tokenizer.execute();
+    tokens.push(scannedToken);
+  }
+
+  return tokens;
+}

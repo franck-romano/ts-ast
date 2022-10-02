@@ -5,4 +5,5 @@ export type Content = {
   extract(start: number, end: number): string;
   at(position: number): string;
   value(): string;
+  isEOF(position: number): boolean;
 };

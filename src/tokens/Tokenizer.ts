@@ -8,45 +8,40 @@ import { Separators } from './Separators';
 
 export class Tokenizer {
   private currentPosition = 0;
-  private tokens: Token[] = [];
   private readonly content: Content;
 
   constructor(rawContent: string) {
     this.content = ParsedContent(rawContent);
   }
 
-  execute(): Token[] {
-    const parsedContent = this.content;
-    while (this.currentPosition !== parsedContent.value().length) {
-      this.scanForwardUntil(parsedContent.containsSpacesTabs);
-      const start = this.currentPosition;
-      const character = ParsedCharacter(parsedContent.at(this.currentPosition));
-
-      if (character.isIntegerLiteral()) {
-        this.scanForwardUntil(parsedContent.containsIntegerLiteral);
-        const value = parsedContent.extract(start, this.currentPosition);
-        this.addToken(Tokens.Literal(value));
-      } else if (character.isCharacter()) {
-        this.scanForwardUntil(parsedContent.containsCharacters);
-        const value = parsedContent.extract(start, this.currentPosition);
-        const token = ReservedKeywords.has(value) ? Tokens.ReservedKeyword(value) : Tokens.Identifier(value);
-        this.addToken(token);
-      } else {
-        this.currentPosition++;
-        const value = parsedContent.at(this.currentPosition - 1);
-        if (Separators.has(value)) {
-          this.addToken(Tokens.Separator(value));
-        } else {
-          this.addToken(Tokens.Unknown(value));
-        }
-      }
+  *scanForward(): Generator<number, void> {
+    while (this.currentPosition <= this.content.value().length) {
+      yield this.currentPosition++;
     }
-
-    return this.tokens;
   }
 
-  private addToken(token: Token) {
-    this.tokens.push(token);
+  execute(): Token {
+    this.scanForwardUntil(this.content.containsSpacesTabs);
+    const start = this.currentPosition;
+
+    if (this.content.isEOF(this.currentPosition)) {
+      return Tokens.EOF();
+    }
+    const character = ParsedCharacter(this.content.at(this.currentPosition));
+
+    if (character.isIntegerLiteral()) {
+      this.scanForwardUntil(this.content.containsIntegerLiteral);
+      const value = this.content.extract(start, this.currentPosition);
+      return Tokens.Literal(value);
+    } else if (character.isCharacter()) {
+      this.scanForwardUntil(this.content.containsCharacters);
+      const value = this.content.extract(start, this.currentPosition);
+      return ReservedKeywords.has(value) ? Tokens.ReservedKeyword(value) : Tokens.Identifier(value);
+    } else {
+      this.currentPosition++;
+      const value = this.content.at(this.currentPosition - 1);
+      return Separators.has(value) ? Tokens.Separator(value) : Tokens.Unknown(value);
+    }
   }
 
   private scanForwardUntil(pred: (position: number) => boolean) {

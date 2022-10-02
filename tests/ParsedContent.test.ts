@@ -28,6 +28,7 @@ describe('ParsedContent', () => {
       expect(ParsedContent('1').containsIntegerLiteral(0)).to.be.true;
     });
   });
+
   describe('.containsCharacters()', () => {
     it('returns false', () => {
       expect(ParsedContent('1').containsCharacters(0)).to.be.false;
@@ -46,6 +47,15 @@ describe('ParsedContent', () => {
     });
     it('returns true', () => {
       expect(ParsedContent('\n').containsSpacesTabs(0)).to.be.true;
+    });
+  });
+
+  describe('.isEOF()', () => {
+    it('returns false', () => {
+      expect(ParsedContent('12').isEOF(1)).to.be.false;
+    });
+    it('returns true', () => {
+      expect(ParsedContent('1').isEOF(1)).to.be.true;
     });
   });
 });
